@@ -83,19 +83,19 @@ def create_csv_file(name_file: str = "file.csv"):
     Выгрузку в csv следующих данных: id игрока, название уровня,
     пройден ли уровень, полученный приз за уровень.
     """
+
+    q_set = PlayerLevel.objects.select_related('level__prize').all()
+
     with open(name_file, mode="w", encoding='utf-8') as w_file:
         file_writer = csv.writer(w_file, delimiter=",", lineterminator="\r")
         file_writer.writerow(
             ["id игрока", "название уровня",
              "пройден ли уровень", "полученный приз за уровень"]
         )
-        q_set = PlayerLevel.objects.all()
         for obj in q_set:
             file_writer.writerow([
                 obj.player.player_id,
                 obj.level.title,
                 "Пройден" if obj.is_completed else "Не пройден",
-                get_object_or_404(
-                    LevelPrize, level=obj.level, received=obj.completed
-                ).prize.title
+                obj.level.prize.title if obj.level.prize else ""
             ])
